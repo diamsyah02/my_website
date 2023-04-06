@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model kemampuan {
+  id Int @id @default(autoincrement())
+  nama_kemampuan String?
+  foto String?
+}
+
+model kontak {
+  id Int @id @default(autoincrement())
+  jenis_kontak String?
+  alamat_kontak String?
+}
+
+model pendidikan {
+  id Int @id @default(autoincrement())
+  nama_sekolah String?
+  mulai_sekolah String?
+  selesai_sekolah String?
+  alamat_sekolah String?
+  foto String?
+}
+
+model pengalaman {
+  id Int @id @default(autoincrement())
+  nama_perusahaan String?
+  posisi_pekerjaan String?
+  mulai_kerja String?
+  selesai_kerja String?
+  tanggung_jawab String?
+  alamat_tempat_kerja String?
+}
+
+model portofolio {
+  id Int @id @default(autoincrement())
+  nama_portofolio String?
+  deskripsi String?
+}
+
+model profile {
+  id Int @id @default(autoincrement())
+  nama String?
+  tempat_lahir String?
+  tanggal_lahir String?
+  alamat String?
+  lainnya String?
+}
+
+model users {
+  id Int @id @default(autoincrement())
+  username String?
+  email String?
+  password String?
+}
+
+model visitor {
+  id Int @id @default(autoincrement())
+  country String?
+  city String?
+  provider String?
+  ip String?
+}
