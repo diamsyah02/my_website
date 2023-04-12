@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import { Inter } from 'next/font/google'
 import { WebResponseEntity } from '@/helpers/web_response'
-import { getData } from '@/helpers/fetching'
+import { getDataFE } from '@/helpers/fetching'
 import Profile from '@/components/Profile'
 import Contact from '@/components/Contact'
 import Education from '@/components/Education'
@@ -54,11 +54,11 @@ export default function Home({ profile, skill, contact, portfolio, education, ex
 
 Home.getInitialProps = async () => {
   return {
-    profile: await getData(`profile`),
-    skill: await getData(`skill`),
-    contact: await getData(`contact`),
-    portfolio: await getData(`portfolio`),
-    education: await getData(`education`),
-    experience: await getData(`experience`),
+    profile: await getDataFE(`profile`),
+    skill: await getDataFE(`skill`),
+    contact: await getDataFE(`contact`),
+    portfolio: await getDataFE(`portfolio`),
+    education: await getDataFE(`education`),
+    experience: await getDataFE(`experience`),
   }
 }

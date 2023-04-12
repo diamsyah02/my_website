@@ -1,7 +1,59 @@
 import Navbar from "@/components/administrator/Navbar"
+import FormAdd from "@/components/administrator/contact/FormAdd"
+import FormEdit from "@/components/administrator/contact/FormEdit"
+import { deleteData, getData, postData, putData } from "@/helpers/fetching"
+import ContactEntity from "@/pages/api/contact/entity"
 import Head from "next/head"
+import { NextRequest, NextResponse } from "next/server"
+import { useState } from "react"
 
-const Contact = () => {
+export async function getServerSideProps({ req, res }: { req: NextRequest, res: NextResponse }) {
+    const cookie = req.cookies.async_await
+    if (cookie == undefined) {
+        return {
+            redirect: {
+                permanent: true,
+                destination: `/`,
+            },
+        };
+    }
+    const result = await getData(`contact`, cookie)
+    return {
+        props: {
+            data: (result.data.length > 0) ? result.data : [],
+            token: cookie
+        }
+    }
+}
+
+const Contact = ({ data, token }: { data: ContactEntity[], token: string }) => {
+    const [dataContact, setDataContact] = useState<ContactEntity[]>(data)
+    const [detailContact, setDetailContact] = useState<ContactEntity>()
+    const [showFormEdit, setShowFormEdit] = useState<boolean>(false)
+    const paramURL = `contact`
+
+    async function onInsert(param: ContactEntity) {
+        let res = await postData(paramURL, token, param)
+        if (res.statusCode == 200 || res.statusCode == 201) location.reload()
+        else alert(res.message)
+    }
+
+    async function onEdit(param: ContactEntity) {
+        setShowFormEdit(!showFormEdit)
+        setDetailContact(param)
+    }
+
+    async function onUpdate(param: ContactEntity) {
+        let res = await putData(paramURL, token, param, +detailContact?.id)
+        if (res.statusCode == 200 || res.statusCode == 201) location.reload();
+        else alert(res.message);
+    }
+
+    async function onDelete(id: number) {
+        let res = await deleteData(paramURL, token, id)
+        if (res.statusCode == 200 || res.statusCode == 201) location.reload()
+        else alert(res.message)
+    }
     return (
         <>
             <Head>
@@ -14,7 +66,61 @@ const Contact = () => {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <main>
+                {showFormEdit &&
+                    <div className="w-full h-screen absolute flex justify-center items-end bg-black opacity-75 z-10 animate__animated animate__bounceInDown">
+                        <FormEdit data={detailContact} updateData={(param: ContactEntity) => onUpdate(param)} cancelEdit={() => setShowFormEdit(!showFormEdit)} />
+                    </div>
+                }
                 <Navbar />
+                <div className={`flex w-full h-screen px-6 pt-24 space-x-8`}>
+                    <div className={`w-3/5 relative overflow-x-auto`}>
+                        <div className="text-2xl font-bold mb-4">List Contact</div>
+                        <table className="w-full text-sm text-left rounded">
+                            <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-900 dark:text-white">
+                                <tr>
+                                    <th scope="col" className="px-6 py-3">
+                                        #
+                                    </th>
+                                    <th scope="col" className="px-6 py-3">
+                                        Jenis Kontak
+                                    </th>
+                                    <th scope="col" className="px-6 py-3">
+                                        Alamat Kontak
+                                    </th>
+                                    <th scope="col" className="px-6 py-3">
+                                        ##
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {dataContact.map((item, i) =>
+                                    <tr className="bg-white border-b dark:bg-gray-100 dark:border-gray-700" key={i}>
+                                        <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-gray-900">
+                                            {i + 1}
+                                        </th>
+                                        <td className="px-6 py-4">
+                                            {item.jenis_kontak}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {item.alamat_kontak}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="cursor-pointer" onClick={() => onEdit(item)}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style={{ fill: '#111827' }}><path d="m18.988 2.012 3 3L19.701 7.3l-3-3zM8 16h3l7.287-7.287-3-3L8 13z"></path><path d="M19 19H8.158c-.026 0-.053.01-.079.01-.033 0-.066-.009-.1-.01H5V5h6.847l2-2H5c-1.103 0-2 .896-2 2v14c0 1.104.897 2 2 2h14a2 2 0 0 0 2-2v-8.668l-2 2V19z"></path></svg>
+                                            </span>
+                                            <span className="cursor-pointer" onClick={() => onDelete(parseInt(item?.id))}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style={{ fill: '#111827' }}><path d="M5 20a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8h2V6h-4V4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H3v2h2zM9 4h6v2H9zM8 8h9v12H7V8z"></path><path d="M9 10h2v8H9zm4 0h2v8h-2z"></path></svg>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="w-2/5 border-l px-6">
+                        <FormAdd insertData={(param: ContactEntity) => onInsert(param)} />
+                    </div>
+                </div>
             </main>
         </>
     )

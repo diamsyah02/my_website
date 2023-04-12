@@ -1,7 +1,48 @@
+import { useState } from "react"
 import Navbar from "@/components/administrator/Navbar"
 import Head from "next/head"
+import ProfileEntity from "@/pages/api/profile/entity"
+import { getData, postData, putData } from "@/helpers/fetching"
+import FormAdd from "@/components/administrator/profile/FormAdd"
+import FormEdit from "@/components/administrator/profile/FormEdit"
+import { NextRequest, NextResponse } from "next/server"
 
-const Profile = () => {
+export async function getServerSideProps({ req, res } : { req: NextRequest, res: NextResponse }) {
+    const cookie = req.cookies.async_await
+    if(cookie == undefined) {
+        return {
+            redirect: {
+                permanent: true,
+                destination: `/`,
+            },
+        };
+    }
+    const result = await getData(`profile`, cookie)
+    return {
+        props: {
+            data: (result.data.length > 0) ? result.data[0] : {},
+            token: cookie
+        }
+    }
+}
+
+const Profile = ({ data, token }: { data: ProfileEntity, token: string }) => {
+    const [dataProfile, setDataProfile] = useState<ProfileEntity>(data)
+    const [showFormAdd, setShowFormAdd] = useState<boolean>(false)
+    const [showFormEdit, setShowFormEdit] = useState<boolean>(false)
+    const paramURL = `profile`
+
+    async function onInsert(param: ProfileEntity) {
+        let res = await postData(paramURL, token, param)
+        if (res.statusCode == 200 || res.statusCode == 201) location.reload();
+        else alert(res.message);
+    }
+
+    async function onUpdate(param: ProfileEntity) {
+        let res = await putData(paramURL, token, param, +dataProfile?.id)
+        if (res.statusCode == 200 || res.statusCode == 201) location.reload();
+        else alert(res.message);
+    }
     return (
         <>
             <Head>
@@ -15,6 +56,44 @@ const Profile = () => {
             </Head>
             <main>
                 <Navbar />
+                {Object.keys(dataProfile).length === 0 &&
+                    <div className={`flex ${showFormAdd ? 'space-x-8' : ''}`}>
+                        <div className={`flex ${showFormAdd ? 'w-3/4' : 'w-full'} h-screen justify-center items-center`}>
+                            <button className="bg-gray-900 text-white rounded py-3 px-6 hover:bg-gray-700" onClick={() => setShowFormAdd(!showFormAdd)}>Add Profile</button>
+                        </div>
+                        {showFormAdd &&
+                            <div className="w-1/4 border-l px-6 pt-24 animate__animated animate__bounceInRight">
+                                <FormAdd insertData={(param: ProfileEntity) => onInsert(param)} />
+                            </div>
+                        }
+                    </div>
+                }
+                {Object.keys(dataProfile).length > 0 &&
+                    <div className={`flex ${showFormEdit ? 'space-x-8' : ''}`}>
+                        {showFormEdit &&
+                            <div className="w-1/4 border-r px-6 pt-24 animate__animated animate__bounceInLeft">
+                                <FormEdit data={dataProfile} updateData={(param: ProfileEntity) => onUpdate(param)} />
+                            </div>
+                        }
+                        <div className={`flex w-full h-screen justify-center items-center px-10 space-x-10`}>
+                            <div>
+                                <img
+                                    src="https://servicewebsite.diamsyahh.com/assets/imgs/me.jpg"
+                                    alt="Foto Profile"
+                                    className="rounded-full h-48 w-48 object-cover"
+                                />
+                            </div>
+                            <div>
+                                <p className="py-2 px-4 border-b">{dataProfile?.nama}</p>
+                                <p className="py-2 px-4 border-b">{dataProfile?.tempat_lahir}</p>
+                                <p className="py-2 px-4 border-b">{dataProfile?.tanggal_lahir}</p>
+                                <p className="py-2 px-4 border-b">{dataProfile?.alamat}</p>
+                                <p className="py-2 px-4 border-b">{dataProfile?.lainnya}</p>
+                                <button className="bg-gray-900 text-white rounded mt-4 py-3 px-6 hover:bg-gray-700" onClick={() => setShowFormEdit(!showFormEdit)}>Edit Profile</button>
+                            </div>
+                        </div>
+                    </div>
+                }
             </main>
         </>
     )

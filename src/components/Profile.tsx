@@ -5,11 +5,13 @@ const Profile = ({ data }: { data: ProfileEntity }) => {
         <>
             <div className="py-3">
                 <div className="text-center">
-                    <img
-                        src="https://servicewebsite.diamsyahh.com/assets/imgs/me.jpg"
-                        alt="Foto Profile"
-                        className="rounded-full h-36 w-36 object-cover"
-                    />
+                    <div className="flex justify-center items-center">
+                        <img
+                            src="https://servicewebsite.diamsyahh.com/assets/imgs/me.jpg"
+                            alt="Foto Profile"
+                            className="rounded-full h-48 w-48 object-cover"
+                        />
+                    </div>
                     <div className="text-2xl mt-2 mb-0">I'am a Technology Enthusiast</div>
                     <div className="text-2xl mt-2 mb-0">And I Like JavaScript</div>
                 </div>
